@@ -79,7 +79,7 @@ postgresql:
   auth:
     database: n8n
     username: n8n
-    password: "changeme"   # <-- must match main.secret.db.postgresdb.password above
+    password: "n8n-db-password"
   primary:
     persistence:
       enabled: true
