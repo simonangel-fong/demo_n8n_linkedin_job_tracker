@@ -1,0 +1,82 @@
+# ============================================================
+# n8n Helm values for 8gears/n8n-helm-chart
+# Homelab setup: PostgreSQL + nginx ingress + Cloudflare tunnel
+# No Redis/queue mode (single node)
+# ============================================================
+
+# --- Ingress (top-level, not under main) ---
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+  hosts:
+    - host: homelab-n8n.arguswatcher.net 
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []   # No TLS 
+
+# --- Main n8n app config ---
+main:
+  config:
+    n8n:
+      editor_base_url: "http://homelab-n8n.arguswatcher.net"   # domain
+    webhook_url: "http://homelab-n8n.arguswatcher.net"          # domain
+    generic:
+      timezone: America/Toronto
+    
+    db:
+      type: postgresdb
+      postgresdb:
+        host: postgres.n8n.svc.cluster.local
+        port: 5432
+        database: n8n
+        user: n8n
+
+  secret:
+    db:
+      postgresdb:
+        password: "n8n-db-password"
+
+  # Alternatively, pull the password from the existing k8s secret:
+  # extraEnv:
+  #   - name: DB_POSTGRESDB_PASSWORD
+  #     valueFrom:
+  #       secretKeyRef:
+  #         name: n8n-postgres-secret
+  #         key: POSTGRES_PASSWORD
+
+persistence:
+  enabled: true
+  type: dynamic
+  size: 5Gi
+  accessModes:
+    - ReadWriteOnce
+
+replicaCount: 1
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 512Mi
+  limits:
+    cpu: 500m
+    memory: 1Gi
+
+
+deploymentStrategy:
+  type: Recreate
+
+worker:
+  enabled: false
+
+webhook:
+  enabled: false
+
+valkey:
+  enabled: false
+redis:
+  enabled: false
