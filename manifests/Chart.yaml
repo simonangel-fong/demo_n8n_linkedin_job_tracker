@@ -4,12 +4,12 @@ description: n8n workflow automation
 type: application
 version: 0.1.0
 
-# dependencies:
-#   - name: n8n
-#     repository: oci://8gears.container-registry.com/library
-#     version: "2.0.1"   
-#     alias: n8n
-#   - name: postgresql
-#     repository: oci://registry-1.docker.io/bitnamicharts
-#     version: "18.3.0"
-#     alias: postgresql
+dependencies:
+  - name: n8n
+    repository: oci://8gears.container-registry.com/library
+    version: "2.0.1"   
+    alias: n8n
+  - name: postgresql
+    repository: oci://registry-1.docker.io/bitnamicharts
+    version: "18.3.0"
+    alias: postgresql
