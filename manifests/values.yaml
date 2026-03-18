@@ -7,9 +7,8 @@ n8n:
   main:
     config:
       n8n:
-        editor_base_url: "http://homelab-n8n.arguswatcher.net"   # domain
-        port: 5678
-        webhook_url: "http://homelab-n8n.arguswatcher.net"          # domain
+        editor_base_url: "https://homelab-n8n.arguswatcher.net"
+        webhook_url: "https://homelab-n8n.arguswatcher.net"
       generic:
         timezone: America/Toronto
       
