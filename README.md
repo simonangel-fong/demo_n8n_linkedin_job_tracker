@@ -23,3 +23,7 @@ kubectl port-forward svc/n8n -n n8n 8020:80
 **This repository contains sanitized n8n workflow definitions for demonstration purposes. Credentials, secrets, and environment-specific values are managed separately in the runtime environment.**
 
 
+```sh
+# break the app
+
+```
