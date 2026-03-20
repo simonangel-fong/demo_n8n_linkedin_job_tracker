@@ -7,7 +7,7 @@ nginx:
       listen 80;
       server_name localhost;
 
-      location / {
+      locationaa / {
         root   /usr/share/nginx/html;
         index  index.html;
       # missing closing brace — nginx config test will fail
