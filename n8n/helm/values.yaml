@@ -23,6 +23,15 @@ n8n:
     serviceAccount:
       name: n8n-reader
 
+    extraEnv:
+      - name: K8S_TOKEN
+        valueFrom:
+          secretKeyRef:
+            name: n8n-reader-token
+            key: token
+      - name: K8S_API
+        value: "https://kubernetes.default.svc"
+
     secret:
       db:
         postgresdb:
@@ -87,15 +96,6 @@ n8n:
           - path: /
             pathType: Prefix
     tls: []   # No TLS 
-
-  extraEnv:
-    - name: K8S_TOKEN
-      valueFrom:
-        secretKeyRef:
-          name: n8n-reader-token
-          key: token
-    - name: K8S_API
-      value: "https://kubernetes.default.svc"
 
   # --- extra: SA and clusterrole
   extraManifests:
