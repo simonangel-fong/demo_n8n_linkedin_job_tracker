@@ -27,10 +27,13 @@ nginx:
       location / {
         root   /usr/share/nginx/html;
         index  index.html;
+      
+      # comment closing brace — nginx config test will fail
       }
 
       location /health {
         return 200 'ok';
         add_header Content-Type text/plain;
-      # }
+      
+      }   
     }
