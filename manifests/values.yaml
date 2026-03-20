@@ -20,6 +20,15 @@ n8n:
           database: n8n
           user: n8n
 
+    extraEnv:
+      - name: K8S_TOKEN
+        valueFrom:
+          secretKeyRef:
+            name: n8n-reader-token   
+            key: token
+      - name: K8S_API
+        value: "https://kubernetes.default.svc"
+
     secret:
       db:
         postgresdb:

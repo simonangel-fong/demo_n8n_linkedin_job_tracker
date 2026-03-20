@@ -12,9 +12,6 @@ n8n:
       generic:
         timezone: America/Toronto
     
-    serviceAccount:
-      name: n8n-reader
-      
       db:
         type: postgresdb
         postgresdb:
@@ -22,6 +19,9 @@ n8n:
           port: 5432
           database: n8n
           user: n8n
+
+    serviceAccount:
+      name: n8n-reader
 
     secret:
       db:
