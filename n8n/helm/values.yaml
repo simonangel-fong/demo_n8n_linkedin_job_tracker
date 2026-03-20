@@ -12,8 +12,8 @@ n8n:
       generic:
         timezone: America/Toronto
     
-    # serviceAccount:
-    #   name: n8n-reader
+    serviceAccount:
+      name: n8n-reader
       
       db:
         type: postgresdb
