@@ -17,6 +17,13 @@ resources:
     memory: "64Mi"
     cpu: "100m"
 
+readinessProbe:
+  initialDelaySeconds: 5
+  periodSeconds: 10
+livenessProbe:
+  initialDelaySeconds: 10
+  periodSeconds: 15
+
 # nginx configuration — edit this to simulate an incident
 nginx:
   config: |

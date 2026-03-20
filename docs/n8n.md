@@ -52,3 +52,17 @@ kubectl logs -n argocd deployment/argocd-notifications-controller --tail=20 | gr
 
 
 ```
+
+## set argocd notification
+
+```sh
+# confirm notification:
+
+kubectl get cm argocd-notifications-cm -n argocd -o yaml
+# apiVersion: v1
+# data:
+#   context: |
+#     argocdUrl: https://argocd.example.com
+#   service.webhook.n8n-incident: |
+#     url: http://n8n.n8n.svc.cluster.local/webhook/a7560150-a895-4a10-8e22-a27a74fa2b01
+```
