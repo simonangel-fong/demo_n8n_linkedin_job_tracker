@@ -36,7 +36,7 @@ nginx:
         index  index.html;
       
       # comment closing brace — nginx config test will fail
-      # }
+      }
 
       location /health {
         return 200 'ok';
