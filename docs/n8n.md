@@ -1,8 +1,13 @@
-```sh
+# KubeTriage - Set n8n workflow
 
-```
+[Back](../README.md)
 
-- Node: HTTP Request node: list pods in demo namespace\*\*
+- [KubeTriage - Set n8n workflow](#kubetriage---set-n8n-workflow)
+  - [Break](#break)
+  - [set argocd notification](#set-argocd-notification)
+  - [Get webhook url](#get-webhook-url)
+    - [Update Argocd Notification Webhook](#update-argocd-notification-webhook)
+  - [Test Webhook: Break demo-app](#test-webhook-break-demo-app)
 
 Method: GET
 URL: https://kubernetes.default.svc/api/v1/namespaces/demo/pods
@@ -16,25 +21,25 @@ SSL: disable certificate verification (self-signed cert in minikube)
 
 ```sh
 argocd app get argocd/demo-web
-# Name:               argocd/demo-web
+# Name:               argocd/demo-app
 # Project:            homelab
 # Server:             https://kubernetes.default.svc
 # Namespace:          n8n
-# URL:                https://argocd.example.com/applications/demo-web
+# URL:                https://argocd.example.com/applications/demo-app
 # Source:
 # - Repo:             https://github.com/simonangel-fong/Project-KubeTriage.git
 #   Target:           main
 #   Path:             demo-app/helm
-#   Helm Values:      values-broken.yaml
+#   Helm Values:      values.yaml
 # SyncWindow:         Sync Allowed
 # Sync Policy:        Automated (Prune)
-# Sync Status:        Synced to main (5cc4b63)
-# Health Status:      Degraded
+# Sync Status:        Synced to main (3ed34c9)
+# Health Status:      Healthy
 
-# GROUP  KIND        NAMESPACE  NAME                   STATUS  HEALTH    HOOK  MESSAGE
-#        ConfigMap   n8n        demo-app-nginx-config  Synced                  configmap/demo-app-nginx-config serverside-applied
-#        Service     n8n        demo-app               Synced  Healthy         service/demo-app serverside-applied
-# apps   Deployment  n8n        demo-app               Synced  Degraded        deployment.apps/demo-app serverside-applied
+# GROUP  KIND        NAMESPACE  NAME                   STATUS  HEALTH   HOOK  MESSAGE
+#        ConfigMap   n8n        demo-app-nginx-config  Synced
+#        Service     n8n        demo-app               Synced  Healthy
+# apps   Deployment  n8n        demo-app               Synced  Healthy
 
 # Check if the notification was sent
 kubectl logs -n argocd deployment/argocd-notifications-controller --tail=20 | grep demo-app | grep error
@@ -71,9 +76,18 @@ kubectl get cm argocd-notifications-cm -n argocd -o yaml
 
 ---
 
-##
+## Get webhook url
+
+- Create Webhook Node
+  - Urls shown in webhook node:
+    - test url: https://homelab-n8n.arguswatcher.net/webhook-test/kube-triage
+    - prod url: http://n8n.n8n.svc.cluster.local:5678/webhook/kube-triage
+  - By testing, urls should be:
+    - test url: https://homelab-n8n.arguswatcher.net/webhook-test/kube-triage
+    - prod url: http://n8n.n8n.svc.cluster.local/webhook/kube-triage
 
 ```sh
+
 kubectl run curl-test \
   --image=curlimages/curl \
   --restart=Never \
@@ -90,13 +104,71 @@ kubectl run curl-test \
     "revision": "abc123",
     "message": "Back-off restarting failed container nginx in pod demo-app"
   }'
+# {"message":"Workflow was started"}pod "curl-test" deleted from argocd namespace
+```
 
-kubectl logs -n argocd -l app.kubernetes.io/name=argocd-notifications-controller --since-time="2026-03-21T10:00:00Z" -f | grep demo-app
+---
 
-# orce a re-evaluation
+### Update Argocd Notification Webhook
+
+```yaml
+notifications:
+  enabled: true
+  cm:
+    create: true
+  notifiers:
+    service.webhook.n8n-incident: |
+      url: http://n8n.n8n.svc.cluster.local/webhook/kube-triage
+      headers:
+        - name: Content-Type
+          value: application/json
+```
+
+- Update Helm
+
+```sh
+helm upgrade --install argocd argo/argo-cd -n argocd --version 9.4.15 -f argocd/helm/values.yaml
+```
+
+---
+
+## Test Webhook: Break demo-app
+
+```yaml
+# nginx configuration — edit this to simulate an incident
+nginx:
+  config: |
+    server {
+      listen 80;
+      server_name localhost;
+
+      location / {
+        root   /usr/share/nginx/html;
+        index  index.html;
+      
+      # comment closing brace — nginx config test will fail
+      # }
+
+      location /health {
+        return 200 'ok';
+        add_header Content-Type text/plain;
+      
+      }   
+    }
+```
+
+- monitor and confirm
+
+
+```sh
+# force a re-evaluation if needed
 kubectl annotate app demo-app -n argocd \
   notifications.argoproj.io/subscribe.on-health-degraded.n8n-incident="" \
   --overwrite
+
+# argocd controller
+kubectl logs -n argocd -l app.kubernetes.io/name=argocd-notifications-controller -f | grep -iE "sending|error"
+
 ```
 
 ---
@@ -190,7 +262,7 @@ Node Type: AI Agent
 Node Name: AI Agent
 Model: google gemini
 Previous Node: gen_context
-Configuration: 
+Configuration:
 
 - User message: {{ $json.context }}
 - System Message:
