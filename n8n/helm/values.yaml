@@ -33,12 +33,10 @@ n8n:
         value: "https://kubernetes.default.svc"
       - name: NODE_EXTRA_CA_CERTS
         value: "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"
-      - name: N8N_HOST
-        value: "n8n.n8n.svc.cluster.local"
-      - name: N8N_PORT
-        value: "80"
-      - name: N8N_PROTOCOL
-        value: "http"
+      # - name: N8N_HOST
+      #   value: "n8n.n8n.svc.cluster.local"
+      # - name: N8N_PROTOCOL
+      #   value: "http"
 
     secret:
       db:
