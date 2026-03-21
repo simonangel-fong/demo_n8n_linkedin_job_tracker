@@ -7,8 +7,8 @@ n8n:
   main:
     config:
       n8n:
-        editor_base_url: "http://n8n.n8n.svc.cluster.local"
-        webhook_url: "http://n8n.n8n.svc.cluster.local"
+        editor_base_url: "https://homelab-n8n.arguswatcher.net"
+        webhook_url: "https://homelab-n8n.arguswatcher.net"
       generic:
         timezone: America/Toronto
     
@@ -161,7 +161,7 @@ postgresql:
   primary:
     persistence:
       enabled: true
-      size: 5Gi
+      size: 2Gi
       accessModes:
         - ReadWriteOnce
     service:
