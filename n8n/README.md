@@ -3,11 +3,10 @@
 [Back](../README.md)
 
 - [KubeTriage - Set n8n workflow](#kubetriage---set-n8n-workflow)
-  - [Break](#break)
-  - [set argocd notification](#set-argocd-notification)
-  - [Get webhook url](#get-webhook-url)
+  - [Enable Notification wiht webhook](#enable-notification-wiht-webhook)
+    - [Get webhook url](#get-webhook-url)
     - [Update Argocd Notification Webhook](#update-argocd-notification-webhook)
-  - [Test Webhook: Break demo-app](#test-webhook-break-demo-app)
+    - [Test Webhook: Break demo-app](#test-webhook-break-demo-app)
   - [Create Workflow](#create-workflow)
     - [Node01 - Webhook: Webhook](#node01---webhook-webhook)
     - [Node02 - HTTP Request: Get\_postlist](#node02---http-request-get_postlist)
@@ -17,76 +16,12 @@
     - [Node06 — Code: gen\_context](#node06--code-gen_context)
     - [Node07 — AI Agent (Gemini)](#node07--ai-agent-gemini)
     - [Node08 — Snd Email](#node08--snd-email)
-  - [Kubetriage In Action](#kubetriage-in-action)
-
-Method: GET
-URL: https://kubernetes.default.svc/api/v1/namespaces/demo/pods
-Headers: Authorization = Bearer {{ $json.token }}
-Content-Type = application/json
-SSL: disable certificate verification (self-signed cert in minikube)
 
 ---
 
-## Break
+## Enable Notification wiht webhook
 
-```sh
-argocd app get argocd/demo-web
-# Name:               argocd/demo-app
-# Project:            homelab
-# Server:             https://kubernetes.default.svc
-# Namespace:          n8n
-# URL:                https://argocd.example.com/applications/demo-app
-# Source:
-# - Repo:             https://github.com/simonangel-fong/Project-KubeTriage.git
-#   Target:           main
-#   Path:             demo-app/helm
-#   Helm Values:      values.yaml
-# SyncWindow:         Sync Allowed
-# Sync Policy:        Automated (Prune)
-# Sync Status:        Synced to main (3ed34c9)
-# Health Status:      Healthy
-
-# GROUP  KIND        NAMESPACE  NAME                   STATUS  HEALTH   HOOK  MESSAGE
-#        ConfigMap   n8n        demo-app-nginx-config  Synced
-#        Service     n8n        demo-app               Synced  Healthy
-# apps   Deployment  n8n        demo-app               Synced  Healthy
-
-# Check if the notification was sent
-kubectl logs -n argocd deployment/argocd-notifications-controller --tail=20 | grep demo-app | grep error
-# {"level":"info","msg":"Start processing","resource":"argocd/demo-web","time":"2026-03-20T20:24:06Z"}
-# {"level":"error","msg":"Failed to evaluate condition of trigger on-health-degraded: trigger 'on-health-degraded' is not configured using the configuration in namespace argocd","resource":"argocd/demo-web","time":"2026-03-20T20:24:06Z"}
-# {"level":"info","msg":"Processing completed","resource":"argocd/demo-web","time":"2026-03-20T20:24:06Z"}
-# {"level":"info","msg":"Start processing","resource":"argocd/demo-web","time":"2026-03-20T20:24:22Z"}
-# {"level":"error","msg":"Failed to evaluate condition of trigger on-health-degraded: trigger 'on-health-degraded' is not configured using the configuration in namespace argocd","resource":"argocd/demo-web","time":"2026-03-20T20:24:22Z"}
-# {"level":"info","msg":"Processing completed","resource":"argocd/demo-web","time":"2026-03-20T20:24:22Z"}
-# {"level":"info","msg":"Start processing","resource":"argocd/demo-web","time":"2026-03-20T20:25:06Z"}
-# {"level":"error","msg":"Failed to evaluate condition of trigger on-health-degraded: trigger 'on-health-degraded' is not configured using the configuration in namespace argocd","resource":"argocd/demo-web","time":"2026-03-20T20:25:06Z"}
-# {"level":"info","msg":"Processing completed","resource":"argocd/demo-web","time":"2026-03-20T20:25:06Z"}
-
-
-```
-
-## set argocd notification
-
-```sh
-# confirm notification:
-
-kubectl get cm argocd-notifications-cm -n argocd -o yaml
-# apiVersion: v1
-# data:
-#   context: |
-#     argocdUrl: https://argocd.example.com
-#   service.webhook.n8n-incident: |
-#     url: http://n8n.n8n.svc.cluster.local/webhook/a7560150-a895-4a10-8e22-a27a74fa2b01
-
-
-
-
-```
-
----
-
-## Get webhook url
+### Get webhook url
 
 - Create Webhook Node
   - Urls shown in webhook node:
@@ -134,6 +69,20 @@ notifications:
           value: application/json
 ```
 
+- Confirm
+
+```sh
+# confirm notification:
+
+kubectl get cm argocd-notifications-cm -n argocd -o yaml
+# apiVersion: v1
+# data:
+#   context: |
+#     argocdUrl: https://argocd.example.com
+#   service.webhook.n8n-incident: |
+#     url: http://n8n.n8n.svc.cluster.local/webhook/kube-triage
+```
+
 - Update Helm
 
 ```sh
@@ -142,7 +91,7 @@ helm upgrade --install argocd argo/argo-cd -n argocd --version 9.4.15 -f argocd/
 
 ---
 
-## Test Webhook: Break demo-app
+### Test Webhook: Break demo-app
 
 ```yaml
 # nginx configuration — edit this to simulate an incident
@@ -195,8 +144,6 @@ kubectl logs -n argocd -l app.kubernetes.io/name=argocd-notifications-controller
 - Diagram
 
 ![pic](./docs/n8n_workflow.png)
-
-
 
 ### Node01 - Webhook: Webhook
 
@@ -578,6 +525,3 @@ Return plain text only — no markdown, no asterisks, no bullet points.
 ```
 
 ---
-
-## Kubetriage In Action
-
